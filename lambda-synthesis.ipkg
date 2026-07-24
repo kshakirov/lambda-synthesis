@@ -19,8 +19,8 @@ authors = "Kirill Shakirov"
 -- modules =
 
 -- main file (i.e. file to load at REPL)
-main = Main
-
+modules = LambdaInterpreter
+main = LambdaInterpreter
 -- name of executable
 executable = "lambda-synthesis"
 -- opts =
