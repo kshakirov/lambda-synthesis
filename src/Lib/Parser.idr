@@ -1,12 +1,10 @@
 module Lib.Parser 
 import Data.String
 import Data.List1
+import Data.List 
 --------------------------------------------------------------------------------
 -- 0. ЛЕКСИЧЕСКИЙ БАЗИС ДЛЯ ПАРСЕРА ПО ВИРТУ
 --------------------------------------------------------------------------------
-
-
-
 
 data Token = OPAR         -- Открывающая скобка (
            | CPAR         -- Закрывающая скобка )
@@ -25,6 +23,9 @@ isNumeric s = case parseInteger  s of
   Just  num => (True, num)
   Nothing =>(False, 0)
 
+data RawTerm = RawConst Int 
+             | RawVar String 
+             | RawAdd RawTerm RawTerm
 
 
 strToToken : String -> Token 
@@ -39,14 +40,74 @@ strToToken s = case s of
   "Int" => INT_KW
   x => 
     let (r, num)  = isNumeric x 
-    in  if r then NUMBER num else  IDENT x -- later change 1 for realnumbr
+    in  if r then NUMBER num else  IDENT x -- latаваer change 1 for realnumbr
+
+
+matchHelper : Char -> Char ->  Bool 
+matchHelper r s    = if r == s then True else False 
+  
+
+srM : List Char -> List Char ->  List Char ->  Nat   -> Int  -> (Nat, Int)
+srM r []  origR  c i  = (c, i)
+srM [] s origR c i = (c,i)
+srM (r::rs) ( s:: xs) origR   c i = case  s of 
+   x => if (matchHelper r s )  then srM rs xs origR (c + 1) (i + 1) else srM origR xs origR 0 (i + 1)
+
+
+
+
+runMarkovStep : (String, String) -> String -> String 
+runMarkovStep rule s = 
+  let left_s =unpack $  fst rule 
+  in 
+  let right_r = unpack $  snd rule 
+  in 
+  let list_string = unpack s 
+
+  
+  in s 
+  
+  
+  
+-- Примерная идея прокрутки правил
+-- runRules : List (String, String) -> List Char -> List Char
+-- runRules []        str = str  -- Ни одно правило не подошло, нормализация окончена
+-- runRules (r :: rs) str =
+--   matchPrefix (unpack $ fst) r str
+  -- Пробуем применить текущее правило r через srM...
+  -- Если совпало — подставляем и начинаем заново с полного списка правил!
+  -- Если не совпало — выбывает r, и запускаем (runRules rs str)
 
 
 tokenize : String -> List1 Token
 tokenize s = map strToToken   (split (== ' ')  s )
 --tokenize s = [""]
-         
+testTokenize = 
+  tokenize "( fn x : Int => add x 1 )"
 
+parseAdd : List Token -> (RawTerm, List Token)
+parseAtom : List Token -> (RawTerm, List Token)
+
+parseAtom [] = (RawVar "", [])
+parseAtom (NUMBER x :: rest) = (RawConst x, rest)
+parseAtom (IDENT x :: rest) = (RawVar x, rest)
+parseAtom ( _ :: rest) = (RawVar "", rest)
+
+parseComp : List Token -> (RawTerm, List Token)
+parseComp (OPAR :: tokens) = parseAdd tokens 
+parseComp tokens = parseAtom tokens  
+
+
+parseAdd (ADD :: rest) =
+  let (left, restL)  = parseComp rest in   
+  let (right, restR) = parseComp restL in 
+  case restR of 
+  (CPAR :: restOther) => (RawAdd left right , restOther)
+  _ =>(RawVar "Error no closing par", restR)
+parseAdd other = (RawVar "Error not Add", other)
+  
+testParseComp terms = 
+  parseComp terms
 
 
 
