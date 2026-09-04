@@ -28,6 +28,10 @@ data RawTerm = RawConst Int
              | RawAdd RawTerm RawTerm
 
 
+data ParserError = NotClosedPars
+|FuncNotImlemented
+|UknownError
+
 strToToken : String -> Token 
 strToToken s = case s of
   "(" => OPAR
@@ -85,26 +89,31 @@ tokenize s = map strToToken   (split (== ' ')  s )
 testTokenize = 
   tokenize "( fn x : Int => add x 1 )"
 
-parseAdd : List Token -> (RawTerm, List Token)
-parseAtom : List Token -> (RawTerm, List Token)
+parseAdd : List Token -> Either ParserError (RawTerm, List Token)
+parseAtom : List Token -> Either ParserError (RawTerm, List Token)
 
-parseAtom [] = (RawVar "", [])
-parseAtom (NUMBER x :: rest) = (RawConst x, rest)
-parseAtom (IDENT x :: rest) = (RawVar x, rest)
-parseAtom ( _ :: rest) = (RawVar "", rest)
+parseAtom [] = Right (RawVar "", [])
+parseAtom (NUMBER x :: rest) = Right (RawConst x, rest)
+parseAtom (IDENT x :: rest) = Right (RawVar x, rest)
+parseAtom ( _ :: rest) = Left UknownError
 
-parseComp : List Token -> (RawTerm, List Token)
+parseComp : List Token -> Either ParserError (RawTerm, List Token)
 parseComp (OPAR :: tokens) = parseAdd tokens 
 parseComp tokens = parseAtom tokens  
 
 
 parseAdd (ADD :: rest) =
-  let (left, restL)  = parseComp rest in   
-  let (right, restR) = parseComp restL in 
-  case restR of 
-  (CPAR :: restOther) => (RawAdd left right , restOther)
-  _ =>(RawVar "Error no closing par", restR)
-parseAdd other = (RawVar "Error not Add", other)
+  case  parseComp rest of 
+    Right (left , restL) =>
+      case parseComp restL of 
+        Right  (right, restR) =>  
+          case restR of 
+            (CPAR :: restOther) => Right (RawAdd left right , restOther)
+            _ =>Left NotClosedPars
+        Left error => Left error
+    Left error => Left error 
+
+parseAdd other = Left FuncNotImlemented
   
 testParseComp terms = 
   parseComp terms
