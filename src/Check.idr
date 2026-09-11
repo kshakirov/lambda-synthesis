@@ -60,11 +60,18 @@ check names ctx (RawVar name)   = case lookupVar name names of
 
 check names ctx (RawAdd l r)   = case check names ctx l of 
   Left s => Left "Fst operand is invalid"
-  Right (t1 ** prf1) => case check names ctx r of 
+  Right (TyInt ** prf1) => case check names ctx r of 
        Left s2 => Left "Snd operand is invalid"
-       Right (t2 ** prf2) => case decEq  t2 t1 of
-         Yes _ =>    Right (t2 **  prf2) 
-         No _ =>  Left ("Types dont match")
-       
-check names ctx (RawMul l r)   = ?check_mul
+       Right (TyInt **  prf2) => Right (TyInt ** Add prf1 prf2)
+       Right (_ ** _) => Left "Snd operand is not Integer"
+  Right ( _ ** _)  => Left "Fst operand is not Integer"
+check names ctx (RawMul l r)   = case check names ctx l of 
+  Left s => Left "Fst operand is invalid"
+  Right (TyInt ** prf1) => case check names ctx r of 
+       Left s2 => Left "Snd operand is invalid"
+       Right (TyInt **  prf2) => Right (TyInt ** Mul prf1 prf2)
+       Right (_ ** _) => Left "Snd operand is not Integer"
+  Right ( _ ** _)  => Left "Fst operand is not Integer"
+
+--check names ctx (RawMul l r)   = ?check_mul
 check names ctx (RawLet v val body) = ?check_let
