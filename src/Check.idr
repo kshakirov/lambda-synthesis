@@ -5,10 +5,18 @@ import Data.Vect
 
 
 
-data Ty = TyInt
+data Ty = TyInt | TyFun Ty Ty
 
 DecEq Ty where
   decEq TyInt TyInt = Yes Refl
+  decEq TyInt (TyFun _ _) = No (\Refl impossible)
+  decEq (TyFun _ _) TyInt = No (\Refl impossible)
+  decEq (TyFun a b) (TyFun c d) =
+    case decEq a c of
+      No ne => No (\Refl => ne Refl)
+      Yes Refl => case decEq b d of
+        No ne => No (\Refl => ne Refl)
+        Yes Refl => Yes Refl
 
 Context : Nat -> Type
 Context n = Vect n Ty
@@ -23,6 +31,7 @@ data RawTerm : Type where
   RawAdd   : RawTerm -> RawTerm -> RawTerm
   RawMul   : RawTerm -> RawTerm -> RawTerm
   RawLet   : String -> RawTerm -> RawTerm -> RawTerm
+  RawLam : String ->  Ty -> RawTerm -> RawTerm
 
 data Term : Context n -> Ty -> Type where
   Const : Int -> Term ctx TyInt
@@ -30,6 +39,8 @@ data Term : Context n -> Ty -> Type where
   Add   : Term ctx TyInt -> Term ctx TyInt -> Term ctx TyInt
   Mul   : Term ctx TyInt -> Term ctx TyInt -> Term ctx TyInt
   Let   : Term ctx t1 -> Term (t1 :: ctx) t2 -> Term ctx t2
+--  Lam : Term (t2  :: ctx) t3 -> Term ctx ( TyFun t2  t3)
+  Lam : Term (t2 :: ctx) t3 -> Term ctx (TyFun t2 t3)
 
 lookupVar : String -> List String -> Maybe Nat
 lookupVar name [] = Nothing
@@ -81,3 +92,7 @@ check names ctx (RawLet v val body) = case check names ctx val of
   Right (t ** valPrf) => case check (v :: names) (t :: ctx) body of
     Left s1 => Left s1
     Right (t2 ** bodyPrf) => Right (t2 ** Let valPrf bodyPrf)
+
+check names ctx (RawLam n t body ) = case check (n ::names)  (t::ctx) body of
+  Left err => Left err
+  Right (t2 ** bodyPrf) => Right( TyFun t t2 ** Lam bodyPrf)
