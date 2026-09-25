@@ -5,6 +5,7 @@ import Data.Vect
 
 
 
+public export
 data Ty = TyInt | TyFun Ty Ty
 
 DecEq Ty where
@@ -18,13 +19,16 @@ DecEq Ty where
         No ne => No (\Refl => ne Refl)
         Yes Refl => Yes Refl
 
+public export
 Context : Nat -> Type
 Context n = Vect n Ty
 
+public export
 data HasType : (idx : Nat) -> (t : Ty) -> (ctx : Context n) -> Type where
   First : HasType Z t (t :: ctx)
   Later : HasType idx t ctx -> HasType (S idx) t (u :: ctx)
 
+public export
 data RawTerm : Type where
   RawConst : Int -> RawTerm
   RawVar   : String -> RawTerm
@@ -32,7 +36,9 @@ data RawTerm : Type where
   RawMul   : RawTerm -> RawTerm -> RawTerm
   RawLet   : String -> RawTerm -> RawTerm -> RawTerm
   RawLam : String ->  Ty -> RawTerm -> RawTerm
+  RawApp : RawTerm -> RawTerm -> RawTerm
 
+public export
 data Term : Context n -> Ty -> Type where
   Const : Int -> Term ctx TyInt
   Var   : HasType idx t ctx -> Term ctx t
@@ -56,6 +62,7 @@ mkHasType (S k) (u :: ctx) = do
   pure (t ** Later prf)
 mkHasType _     []         = Nothing
 
+export
 check : {n : Nat} -> 
         (names : List String) -> 
         (ctx : Context n) -> 
@@ -96,3 +103,5 @@ check names ctx (RawLet v val body) = case check names ctx val of
 check names ctx (RawLam n t body ) = case check (n ::names)  (t::ctx) body of
   Left err => Left err
   Right (t2 ** bodyPrf) => Right( TyFun t t2 ** Lam bodyPrf)
+
+check names ctx (RawApp f t) = ?check_app
