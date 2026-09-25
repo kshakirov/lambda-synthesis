@@ -47,6 +47,7 @@ data Term : Context n -> Ty -> Type where
   Let   : Term ctx t1 -> Term (t1 :: ctx) t2 -> Term ctx t2
 --  Lam : Term (t2  :: ctx) t3 -> Term ctx ( TyFun t2  t3)
   Lam : Term (t2 :: ctx) t3 -> Term ctx (TyFun t2 t3)
+  App: Term ctx (TyFun t2 t3) -> Term ctx t2 -> Term ctx t3
 
 lookupVar : String -> List String -> Maybe Nat
 lookupVar name [] = Nothing
@@ -80,6 +81,7 @@ check names ctx (RawAdd l r)   = case check names ctx l of
   Left s => Left "Fst operand is invalid"
   Right (TyInt ** prf1) => case check names ctx r of 
        Left s2 => Left "Snd operand is invalid"
+
        Right (TyInt **  prf2) => Right (TyInt ** Add prf1 prf2)
        Right (_ ** _) => Left "Snd operand is not Integer"
   Right ( _ ** _)  => Left "Fst operand is not Integer"
@@ -104,4 +106,12 @@ check names ctx (RawLam n t body ) = case check (n ::names)  (t::ctx) body of
   Left err => Left err
   Right (t2 ** bodyPrf) => Right( TyFun t t2 ** Lam bodyPrf)
 
-check names ctx (RawApp f t) = ?check_app
+check names ctx (RawApp f t) = case check names ctx f of
+ Left err => Left err
+ Right (TyFun t55 t3 ** funPrf ) => case check  names ctx t of 
+   Left err2 => Left err2
+   Right (t555  ** pathPrf) => case decEq  t55 t555 of 
+     Yes Refl => Right (t3  ** App funPrf  pathPrf)
+     No _ => Left  "Types are not equal"
+ Right (_ ** _) => Left "not a function"
+
