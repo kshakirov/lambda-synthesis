@@ -31,6 +31,10 @@ data RawTerm = RawConst Int
              | RawVar String 
              | RawAdd RawTerm RawTerm
 
+             |RawLet   String  RawTerm RawTerm
+
+
+
 
 data ParserError = NotClosedPars
 |FuncNotImlemented
@@ -101,6 +105,7 @@ testTokenize =
 
 
 parseAdd : List Token -> Either ParserError (RawTerm, List Token)
+parseLet : List Token -> Either ParserError (RawTerm, List Token)
 parseAtom : List Token -> Either ParserError (RawTerm, List Token)
 
 parseAtom [] = Right (RawVar "", [])
@@ -109,11 +114,12 @@ parseAtom (IDENT x :: rest) = Right (RawVar x, rest)
 parseAtom ( _ :: rest) = Left UknownError
 
 parseComp : List Token -> Either ParserError (RawTerm, List Token)
-parseComp (OPAR :: tokens) = parseAdd tokens 
+parseComp (OPAR :: ADD ::tail) = parseAdd tail
+parseComp (OPAR :: LET ::tail) = parseLet tail
 parseComp tokens = parseAtom tokens  
 
 
-parseAdd (ADD :: rest) =
+parseAdd rest =
   case  parseComp rest of 
     Right (left , restL) =>
       case parseComp restL of 
@@ -124,8 +130,22 @@ parseAdd (ADD :: rest) =
         Left error => Left error
     Left error => Left error 
 
-parseAdd other = Left FuncNotImlemented
-  
+--parseAdd other = Left FuncNotImlemented
+
+parseLet rest = 
+  case parseComp rest of
+    Right(RawVar x, (EQ :: rightTail)) => 
+
+      case parseComp rightTail of 
+        Right (right, nextTail) => 
+          case parseComp nextTail of 
+            Right (inn, otherTail) => Right( RawLet x right inn, otherTail)
+            Left err => Left err
+        Left err => Left err
+    Right(_,_) => Left FuncNotImlemented    
+    Left err => Left err
+           
+
 testParseComp terms = 
   parseComp terms
 
