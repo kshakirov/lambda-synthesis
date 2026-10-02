@@ -15,7 +15,11 @@ data Token = OPAR         -- Открывающая скобка (
            | ADD          -- Ключевое слово add
            | INT_KW       -- Ключевое слово Int
            | NUMBER Int   -- Числовой литерал (хранит значение)
+           | LET
+           | IN 
+           | EQ
            | IDENT String -- Идентификатор (хранит имя переменной)
+           
 
 
 isNumeric : String -> (Bool, Int)
@@ -42,6 +46,9 @@ strToToken s = case s of
   "call" => CALL
   "add" => ADD
   "Int" => INT_KW
+  "let" => LET
+  "in"  => IN
+  "="  => EQ
   x => 
     let (r, num)  = isNumeric x 
     in  if r then NUMBER num else  IDENT x -- latаваer change 1 for realnumbr
@@ -85,9 +92,13 @@ runMarkovStep rule s =
 
 tokenize : String -> List1 Token
 tokenize s = map strToToken   (split (== ' ')  s )
+forgetfulTokenize : String ->List Token
+forgetfulTokenize s = 
+  forget (tokenize s)
 --tokenize s = [""]
 testTokenize = 
-  tokenize "( fn x : Int => add x 1 )"
+  forgetfulTokenize "( add 2 1 )"
+
 
 parseAdd : List Token -> Either ParserError (RawTerm, List Token)
 parseAtom : List Token -> Either ParserError (RawTerm, List Token)
