@@ -2,6 +2,7 @@ module Lib.Parser
 import Data.String
 import Data.List1
 import Data.List 
+import Syntax
 --------------------------------------------------------------------------------
 -- 0. ЛЕКСИЧЕСКИЙ БАЗИС ДЛЯ ПАРСЕРА ПО ВИРТУ
 --------------------------------------------------------------------------------
@@ -26,15 +27,6 @@ isNumeric : String -> (Bool, Int)
 isNumeric s = case parseInteger  s of
   Just  num => (True, num)
   Nothing =>(False, 0)
-
-data RawTerm = RawConst Int 
-             | RawVar String 
-             | RawAdd RawTerm RawTerm
-
-             |RawLet   String  RawTerm RawTerm
-
-
-
 
 data ParserError = NotClosedPars
 |FuncNotImlemented
@@ -148,6 +140,5 @@ parseLet rest =
 
 testParseComp terms = 
   parseComp terms
-
 
 

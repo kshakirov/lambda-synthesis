@@ -2,6 +2,7 @@ module Main
 
 import Check
 import Data.Vect
+import Syntax
 
 rawLamIdentityHasExpectedType : Bool
 rawLamIdentityHasExpectedType =

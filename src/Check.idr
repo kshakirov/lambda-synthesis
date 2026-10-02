@@ -2,11 +2,9 @@ module Check
 
 import Decidable.Equality
 import Data.Vect
+import Syntax
 
 
-
-public export
-data Ty = TyInt | TyFun Ty Ty
 
 DecEq Ty where
   decEq TyInt TyInt = Yes Refl
@@ -27,16 +25,6 @@ public export
 data HasType : (idx : Nat) -> (t : Ty) -> (ctx : Context n) -> Type where
   First : HasType Z t (t :: ctx)
   Later : HasType idx t ctx -> HasType (S idx) t (u :: ctx)
-
-public export
-data RawTerm : Type where
-  RawConst : Int -> RawTerm
-  RawVar   : String -> RawTerm
-  RawAdd   : RawTerm -> RawTerm -> RawTerm
-  RawMul   : RawTerm -> RawTerm -> RawTerm
-  RawLet   : String -> RawTerm -> RawTerm -> RawTerm
-  RawLam : String ->  Ty -> RawTerm -> RawTerm
-  RawApp : RawTerm -> RawTerm -> RawTerm
 
 public export
 data Term : Context n -> Ty -> Type where
@@ -114,4 +102,3 @@ check names ctx (RawApp f t) = case check names ctx f of
      Yes Refl => Right (t3  ** App funPrf  pathPrf)
      No _ => Left  "Types are not equal"
  Right (_ ** _) => Left "not a function"
-
