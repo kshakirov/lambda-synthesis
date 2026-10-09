@@ -2,8 +2,9 @@ module LambdaInterpreter
 
 import Syntax
 import Lib.Parser
-
+import Check
 import Data.List1
+import Data.Vect
 --------------------------------------------------------------------------------
 -- 1. СТАТИКА: ПАСПОРТА И ТИПЫ
 --------------------------------------------------------------------------------
@@ -11,7 +12,12 @@ import Data.List1
 
 main : IO ()
 main = do
-    let rawText = "add 2 3" 
+    let rawText = "(add 2 3)" 
     let tokens  = forgetfulTokenize  rawText
+    print (show tokens)
     let rawTerms = parseComp tokens 
-    print (show  tokens)
+    case rawTerms of 
+      Right (r,rl) =>  
+        let tree = check [] [] r in
+        print (show  tokens)
+      Left s => print  "All is very bad too "
