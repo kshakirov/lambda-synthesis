@@ -25,6 +25,11 @@ public export
 data HasType : (idx : Nat) -> (t : Ty) -> (ctx : Context n) -> Type where
   First : HasType Z t (t :: ctx)
   Later : HasType idx t ctx -> HasType (S idx) t (u :: ctx)
+  
+public export
+Show (HasType idx t ctx) where
+  show First     = "Z"
+  show (Later p) = "S " ++ show p
 
 public export
 data Term : Context n -> Ty -> Type where
@@ -36,6 +41,17 @@ data Term : Context n -> Ty -> Type where
 --  Lam : Term (t2  :: ctx) t3 -> Term ctx ( TyFun t2  t3)
   Lam : Term (t2 :: ctx) t3 -> Term ctx (TyFun t2 t3)
   App: Term ctx (TyFun t2 t3) -> Term ctx t2 -> Term ctx t3
+  
+  
+public export
+Show (Term ctx t) where
+  show (Const n)   = show n
+  show (Var v)     = show v
+  show (Add l r)   = "(" ++ show l ++ " + " ++ show r ++ ")"
+  show (Mul l r)   = "(" ++ show l ++ " * " ++ show r ++ ")"
+  show (Let v b)   = "(let " ++ show v ++ " in " ++ show b ++ ")"
+  show (Lam b)     = "(\\" ++ "_" ++ " => " ++ show b ++ ")"
+  show (App f x)   = "(" ++ show f ++ " " ++ show x ++ ")"
 
 lookupVar : String -> List String -> Maybe Nat
 lookupVar name [] = Nothing

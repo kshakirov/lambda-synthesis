@@ -3,7 +3,7 @@ module Syntax
 public export
 data Ty = TyInt | TyFun Ty Ty
 
-
+export
 Show Ty where                    -- инстанс, где угодно ниже
   show TyInt = "TyInt"
   show (TyFun a b) = "(" ++ show a ++ " -> " ++ show b ++ ")"

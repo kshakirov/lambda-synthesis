@@ -12,12 +12,14 @@ import Data.Vect
 
 main : IO ()
 main = do
-    let rawText = "(add 2 3)" 
+    let rawText = "( add 2 3 )" 
     let tokens  = forgetfulTokenize  rawText
     print (show tokens)
     let rawTerms = parseComp tokens 
     case rawTerms of 
       Right (r,rl) =>  
         let tree = check [] [] r in
-        print (show  tokens)
+        case tree of 
+        Right t => print (show  (fst t))
+        Left ss => print  "All is very bad too "
       Left s => print  "All is very bad too "
