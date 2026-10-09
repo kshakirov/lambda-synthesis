@@ -16,3 +16,4 @@ main =
   if rawLamIdentityHasExpectedType
     then putStrLn "PASS: RawLam identity has type Int -> Int"
     else assert_total $ idris_crash "FAIL: RawLam identity has wrong type"
+

@@ -6,7 +6,7 @@ import Syntax
 --------------------------------------------------------------------------------
 -- 0. ЛЕКСИЧЕСКИЙ БАЗИС ДЛЯ ПАРСЕРА ПО ВИРТУ
 --------------------------------------------------------------------------------
-
+public export
 data Token = OPAR         -- Открывающая скобка (
            | CPAR         -- Закрывающая скобка )
            | COLON        -- Двоеточие :
@@ -20,7 +20,21 @@ data Token = OPAR         -- Открывающая скобка (
            | IN 
            | EQ
            | IDENT String -- Идентификатор (хранит имя переменной)
-           
+export       
+Show Token where 
+  show OPAR = "OPAR"
+  show CPAR     = "CPAR"    -- ЗАКРЫВАЮЩАЯ СКОБКА )
+  show COLON    = "COLON"    -- Двоеточие :
+  show  ARROW    = "ARROW"    -- Стрелка =>
+  show  FN          = "FN" -- Ключевое слово fn
+  show  CALL       = "CALL"  -- Ключевое слово call
+  show  ADD         = "ADD"  -- Ключевое слово add
+  show  INT_KW    = "INT_KW"   -- Ключевое слово Int
+  show (NUMBER a)   = "(" ++  "NUMBER " ++  show a ++  " )" 
+  show  LET = "LET"
+  show  IN  = "IN" 
+  show  EQ = "EQ"
+  show  (IDENT s)  = "( " ++ "IDENT " ++ show s++ " )" -- Идентификатор (хранит имя переменной)
 
 
 isNumeric : String -> (Bool, Int)
@@ -85,9 +99,11 @@ runMarkovStep rule s =
   -- Если совпало — подставляем и начинаем заново с полного списка правил!
   -- Если не совпало — выбывает r, и запускаем (runRules rs str)
 
-
+export
 tokenize : String -> List1 Token
 tokenize s = map strToToken   (split (== ' ')  s )
+
+export
 forgetfulTokenize : String ->List Token
 forgetfulTokenize s = 
   forget (tokenize s)
@@ -105,6 +121,7 @@ parseAtom (NUMBER x :: rest) = Right (RawConst x, rest)
 parseAtom (IDENT x :: rest) = Right (RawVar x, rest)
 parseAtom ( _ :: rest) = Left UknownError
 
+export
 parseComp : List Token -> Either ParserError (RawTerm, List Token)
 parseComp (OPAR :: ADD ::tail) = parseAdd tail
 parseComp (OPAR :: LET ::tail) = parseLet tail
