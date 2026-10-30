@@ -1,0 +1,11 @@
+$ENTRY Go {
+  = <Prout <SkipWs '   let x = { a b } c;'>>;
+}
+
+SkipWs {
+'{' e.Rest ='(' <SkipWs e.Rest>;
+'}' e.Rest =')' <SkipWs e.Rest>;
+'\n' e.Rest = <SkipWs e.Rest>;
+  s.First   e.Rest  = s.First  <SkipWs e.Rest>;
+  = ;
+}

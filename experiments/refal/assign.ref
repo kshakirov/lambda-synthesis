@@ -1,0 +1,10 @@
+$ENTRY Go {
+  = <Prout <Assign 'x: int = 2'>>;
+}
+
+Assign {
+  s.First ':' e.Rest ='( assign (name ' s.First ')'  <Assign e.Rest>;
+  'int = ' s.First e.Rest = '(type int) (int ' s.First '))' <Assign e.Rest>;
+  s.First   e.Rest  = s.First  <Assign e.Rest>;
+  = ;
+}
